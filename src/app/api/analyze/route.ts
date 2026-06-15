@@ -42,9 +42,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json(result);
   } catch (error) {
-    console.error("Analysis error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Analysis error:", msg);
     return Response.json(
-      { error: "Failed to analyze problem" },
+      { error: "Failed to analyze problem", detail: msg },
       { status: 500 }
     );
   }
