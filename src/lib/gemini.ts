@@ -1,7 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AnalysisResult, LegalCategory } from "./types";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 
 const SYSTEM_PROMPT = `তুমি বাংলাদেশের একজন বিশেষজ্ঞ আইনি সহায়তা বিশ্লেষক। ব্যবহারকারীর বাংলায় লেখা আইনি সমস্যা বিশ্লেষণ করে নিচের JSON ফরম্যাটে উত্তর দাও।
 
@@ -35,19 +32,34 @@ JSON ফরম্যাট (বাংলায় উত্তর দাও, Eng
 export async function analyzeCase(
   problemText: string
 ): Promise<AnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
-  const result = await model.generateContent([
-    { text: SYSTEM_PROMPT },
-    { text: `সমস্যা: ${problemText}` },
-  ]);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-  const responseText = result.response.text().trim();
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+        { role: "model", parts: [{ text: "{" }] },
+        { role: "user", parts: [{ text: `সমস্যা: ${problemText}` }] },
+      ],
+    }),
+  });
 
-  if (!jsonMatch) {
-    throw new Error("Invalid AI response format");
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API ${response.status}: ${errText}`);
   }
+
+  const data = await response.json();
+  const responseText: string =
+    data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("Invalid AI response format");
 
   const parsed = JSON.parse(jsonMatch[0]);
 
@@ -55,13 +67,11 @@ export async function analyzeCase(
     category: (parsed.category as LegalCategory) ?? "general",
     confidence: Number(parsed.confidence) ?? 0.7,
     district: parsed.district ?? undefined,
-    summary_bn:
-      parsed.summary_bn ?? "আপনার সমস্যা বিশ্লেষণ করা হয়েছে।",
+    summary_bn: parsed.summary_bn ?? "আপনার সমস্যা বিশ্লেষণ করা হয়েছে।",
     summary_en: parsed.summary_en ?? "Your problem has been analyzed.",
     keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
     severity: parsed.severity ?? "medium",
     recommended_action_bn:
-      parsed.recommended_action_bn ??
-      "একটি আইনি সহায়তা সংস্থায় যোগাযোগ করুন।",
+      parsed.recommended_action_bn ?? "একটি আইনি সহায়তা সংস্থায় যোগাযোগ করুন।",
   };
 }
