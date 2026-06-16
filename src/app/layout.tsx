@@ -21,14 +21,10 @@ export const metadata: Metadata = {
   description:
     "বিনামূল্যে আইনি সহায়তা পান। আপনার সমস্যা বাংলায় লিখুন — AI আপনাকে সঠিক NGO, আইন বিভাগ ও নথি টেমপ্লেট দেবে।",
   keywords: [
-    "legal aid",
-    "Bangladesh",
-    "আইনি সহায়তা",
-    "বাংলাদেশ",
-    "free legal help",
-    "NGO",
+    "legal aid", "Bangladesh", "আইনি সহায়তা", "বাংলাদেশ", "free legal help", "NGO",
   ],
   authors: [{ name: "Bangladesh Legal Aid Platform" }],
+  manifest: "/manifest.json",
   openGraph: {
     title: "বাংলাদেশ আইনি সহায়তা প্ল্যাটফর্ম",
     description: "বিনামূল্যে আইনি সহায়তা — AI-চালিত, বাংলায়",

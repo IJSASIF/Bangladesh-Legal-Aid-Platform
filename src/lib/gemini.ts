@@ -29,9 +29,7 @@ JSON ফরম্যাট (বাংলায় উত্তর দাও, Eng
 
 শুধু JSON রিটার্ন করো, অন্য কিছু না।`;
 
-export async function analyzeCase(
-  problemText: string
-): Promise<AnalysisResult> {
+async function callGemini(parts: unknown[]): Promise<AnalysisResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -40,13 +38,7 @@ export async function analyzeCase(
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-        { role: "model", parts: [{ text: "{" }] },
-        { role: "user", parts: [{ text: `সমস্যা: ${problemText}` }] },
-      ],
-    }),
+    body: JSON.stringify({ contents: [{ role: "user", parts }] }),
   });
 
   if (!response.ok) {
@@ -62,7 +54,6 @@ export async function analyzeCase(
   if (!jsonMatch) throw new Error("Invalid AI response format");
 
   const parsed = JSON.parse(jsonMatch[0]);
-
   return {
     category: (parsed.category as LegalCategory) ?? "general",
     confidence: Number(parsed.confidence) ?? 0.7,
@@ -74,4 +65,24 @@ export async function analyzeCase(
     recommended_action_bn:
       parsed.recommended_action_bn ?? "একটি আইনি সহায়তা সংস্থায় যোগাযোগ করুন।",
   };
+}
+
+export async function analyzeCase(problemText: string): Promise<AnalysisResult> {
+  return callGemini([
+    { text: SYSTEM_PROMPT },
+    { text: `সমস্যা: ${problemText}` },
+  ]);
+}
+
+export async function analyzeImageCase(
+  imageBase64: string,
+  mimeType: string,
+  additionalText?: string
+): Promise<AnalysisResult> {
+  const parts: unknown[] = [
+    { text: SYSTEM_PROMPT + "\n\nনিচের ছবিতে একটি আইনি সমস্যা বা নথি আছে। ছবি দেখে JSON বিশ্লেষণ দাও।" },
+    { inline_data: { mime_type: mimeType, data: imageBase64 } },
+  ];
+  if (additionalText) parts.push({ text: `অতিরিক্ত তথ্য: ${additionalText}` });
+  return callGemini(parts);
 }

@@ -12,9 +12,11 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/ngos", label_bn: "এনজিও সমূহ", label_en: "NGOs" },
+  { href: "/lawyers", label_bn: "আইনজীবী", label_en: "Lawyers" },
   { href: "/laws", label_bn: "আইন বিভাগ", label_en: "Law Sections" },
   { href: "/templates", label_bn: "নথি টেমপ্লেট", label_en: "Templates" },
-  { href: "/about", label_bn: "আমাদের সম্পর্কে", label_en: "About" },
+  { href: "/history", label_bn: "ইতিহাস", label_en: "History" },
+  { href: "/about", label_bn: "সম্পর্কে", label_en: "About" },
 ];
 
 export function Navbar() {

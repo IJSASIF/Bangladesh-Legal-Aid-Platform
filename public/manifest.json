@@ -1,0 +1,26 @@
+{
+  "name": "বাংলাদেশ আইনি সহায়তা প্ল্যাটফর্ম",
+  "short_name": "আইনি সহায়তা",
+  "description": "বিনামূল্যে AI-চালিত আইনি সহায়তা — বাংলায়",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#006A4E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["legal", "government", "utilities"],
+  "lang": "bn"
+}
